@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>চিঠি</title>
+<script>if(location.hash.length>8)document.documentElement.className='v'</script>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--a:#dc2626;--a2:#be123c;--bg:#fff7f7;--p:#fff;--b:#fecdd3;--t:#3f0d12;--m:#9f6b72;--s:#fff1f2}
+*{box-sizing:border-box;margin:0;padding:0}
+html.v body{visibility:hidden}
+body{font-family:'Hind Siliguri',sans-serif;color:var(--t);min-height:100vh;background:radial-gradient(800px 400px at 0 -10%,#ffe4e6 0,transparent 60%),radial-gradient(700px 400px at 100% 0,#fee2e2 0,transparent 55%),var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+.hide{display:none!important}
+input,select,textarea{width:100%;background:#fff;border:1px solid var(--b);border-radius:12px;padding:10px 12px;margin:4px 0 12px;outline:0}
+input:focus,select:focus,textarea:focus{border-color:var(--a);box-shadow:0 0 0 3px rgba(220,38,38,.15)}
+textarea{min-height:160px;resize:vertical;line-height:1.7}
+label{font-size:13px;color:var(--m);font-weight:500}
+.btn{background:linear-gradient(135deg,var(--a),var(--a2));border:0;border-radius:12px;padding:10px 15px;cursor:pointer;font-weight:600;transition:.2s;color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.25)}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.btn:disabled{opacity:.6}
+.btn.g{background:#fff;border:1px solid var(--b);color:var(--a2);box-shadow:none}
+.btn.g:hover{background:var(--s)}
+.btn.r{background:#fff;border:1px solid #fca5a5;color:#b91c1c;box-shadow:none}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.glass{background:var(--p);border:1px solid var(--b);border-radius:18px;padding:16px;box-shadow:0 8px 30px rgba(190,18,60,.07)}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;gap:10px;flex-wrap:wrap;max-width:1280px;margin:auto}
+.logo{font-size:21px;font-weight:700;color:var(--a2)}
+.chip{background:var(--s);border:1px solid var(--b);border-radius:99px;padding:3px 12px;font-size:13px;color:var(--a2);margin-left:8px}
+.wrap{display:grid;grid-template-columns:270px 1fr;gap:16px;padding:0 18px 28px;max-width:1280px;margin:auto}
+.item{padding:11px 12px;border-radius:12px;cursor:pointer;border:1px solid transparent;margin-bottom:7px;background:var(--s);display:flex;gap:10px;align-items:center}
+.item.on{border-color:var(--a);background:#ffe4e6}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.item small{color:var(--m);display:block;font-size:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.link{margin-top:14px;border:1.5px dashed var(--a);border-radius:14px;padding:12px;background:var(--s)}
+#lkv{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-weight:600;color:var(--a2)}
+iframe{width:100%;height:540px;border:1px solid var(--b);border-radius:14px;background:#09090b;display:block;margin:0 auto;transition:.3s}
+.ov{position:fixed;inset:0;background:rgba(63,13,18,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9;backdrop-filter:blur(4px)}
+.md{background:#fff;border:1px solid var(--b);border-radius:20px;padding:22px;width:100%;max-width:400px;animation:pop .25s;max-height:90vh;overflow:auto}
+.md h3{margin-bottom:8px;font-size:19px;color:var(--a2)}
+#qr{display:flex;justify-content:center;padding:10px}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:9px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;z-index:10}
+#toast.show{opacity:1}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div><span class="logo">💌 চিঠি এডমিন</span><span class="chip" id="cnt"></span></div>
+    <div class="bar" style="margin:0">
+      <button class="btn g" onclick="exportJson()">⬇ ব্যাকআপ</button>
+      <button class="btn g" onclick="document.getElementById('imp').click()">⬆ ইমপোর্ট</button>
+      <input type="file" id="imp" accept=".json" class="hide" onchange="importJson(event)">
+      <button class="btn g" onclick="settings()">⚙ সেটিংস</button>
+      <button class="btn g" onclick="help()">❓ সাহায্য</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="glass">
+      <button class="btn" style="width:100%;margin-bottom:10px" onclick="newLetter()">＋ নতুন চিঠি</button>
+      <input id="q" placeholder="🔍 খুঁজুন…" oninput="renderList()">
+      <div id="list"></div>
+    </div>
+    <div class="glass">
+      <label>✨ নমুনা চিঠি থেকে শুরু করুন</label>
+      <select id="tpl" onchange="useTpl()"></select>
+      <div class="row">
+        <div><label>সম্বোধন</label><input id="salutation" oninput="upd()"></div>
+        <div><label>প্রাপকের নাম</label><input id="recipient" oninput="upd()"></div>
+      </div>
+      <label>চিঠির বিষয়বস্তু <span id="cc"></span></label><textarea id="body" oninput="upd()"></textarea>
+      <div class="row">
+        <div><label>প্রেরকের নাম</label><input id="sender" oninput="upd()"></div>
+        <div><label>স্বাক্ষর (যেমন: ইতি)</label><input id="signature" oninput="upd()"></div>
+        <div><label>থিম</label><select id="theme" onchange="upd()"></select></div>
+        <div><label>মোমের সিল</label><select id="seal" onchange="upd()"></select></div>
+        <div><label>ফন্ট</label><select id="font" onchange="upd()"></select></div>
+        <div><label>ইফেক্ট</label><select id="effect" onchange="upd()"></select></div>
+      </div>
+      <label>🔒 কখন থেকে খোলা যাবে (ঐচ্ছিক, খালি রাখলে সবসময় খোলা)</label>
+      <input type="datetime-local" id="unlock" onchange="upd()">
+      <div class="bar">
+        <button class="btn g" onclick="save()">💾 সংরক্ষণ</button>
+        <button class="btn" onclick="makeLink()" id="mk">🔗 শেয়ার লিংক তৈরি</button>
+        <button class="btn r" onclick="askDel()">🗑 ডিলিট</button>
+      </div>
+      <div id="lk" class="link hide">
+        <label>আপনার চিঠির লিংক</label>
+        <input id="lkv" readonly onclick="this.select()">
+        <div class="bar">
+          <button class="btn" onclick="copyLink()">📋 কপি</button>
+          <button class="btn g" onclick="testLink()">↗ খুলে দেখুন</button>
+          <button class="btn g" onclick="showQr()">▦ QR কোড</button>
+          <button class="btn g hide" id="alt" onclick="makeLink(1)">🔁 বিকল্প ঠিকানার লিংক</button>
+        </div>
+        <small id="lkn" style="color:var(--m);display:block;margin-top:8px"></small>
+      </div>
+      <div class="bar" style="margin:16px 0 8px"><b>প্রিভিউ</b>
+        <button class="btn g" onclick="dev('375px')">📱 মোবাইল</button>
+        <button class="btn g" onclick="dev('100%')">🖥 পিসি</button></div>
+      <iframe id="pv" title="প্রিভিউ"></iframe>
+    </div>
+  </div>
+</div>
+
+<div id="ov" class="ov hide"><div class="md"><div id="mt"></div><div class="bar" id="mb" style="margin-top:14px"></div></div></div>
+<div id="toast"></div>
+
+<script>
+const THEMES={
+  rose_velvet:{n:'রোজ ভেলভেট',env:'#881337',flap:'#9f1239',paper:'#fffdfa',ink:'#3b1a22',bg:'#4c0519'},
+  vintage_parchment:{n:'ভিন্টেজ পার্চমেন্ট',env:'#78350f',flap:'#92400e',paper:'#fefcf8',ink:'#3b2a14',bg:'#451a03'},
+  midnight_stardust:{n:'মিডনাইট স্টারডাস্ট',env:'#1e1b4b',flap:'#312e81',paper:'#fafafa',ink:'#1e1b4b',bg:'#0f172a'},
+  emerald_royal:{n:'রয়্যাল এমারেল্ড',env:'#064e3b',flap:'#065f46',paper:'#f7fff9',ink:'#064e3b',bg:'#022c22'},
+  sunset_gold:{n:'সানসেট গোল্ড',env:'#9a3412',flap:'#c2410c',paper:'#fffbf5',ink:'#431407',bg:'#7c2d12'},
+  ocean_blue:{n:'ওশান ব্লু',env:'#0c4a6e',flap:'#075985',paper:'#f5fbff',ink:'#0c4a6e',bg:'#082f49'}
+};
+const SEALS={classic_heart:['ক্লাসিক হার্ট','❤','#be123c'],rose_floral:['গোলাপ','🌹','#9f1239'],royal_crown:['রাজকীয় মুকুট','👑','#b45309'],golden_star:['সোনালী তারা','⭐','#ca8a04'],moon:['চাঁদ','🌙','#4338ca'],dove:['শান্তির পায়রা','🕊️','#0369a1']};
+const FONTS={bangla_poetic:['বাংলা কাব্যিক',"'Hind Siliguri',serif"],classical_serif:['ক্লাসিক্যাল সেরিফ',"Georgia,serif"],script_handwriting:['হাতের লেখা',"'Brush Script MT',cursive"],modern_clean:['আধুনিক',"system-ui,sans-serif"]};
+const EFFECTS={rose_petals:['গোলাপের পাপড়ি বৃষ্টি',['#be123c','#fb7185','#fecdd3'],'rain'],golden_stars:['সোনালী তারা',['#facc15','#fde68a','#f59e0b'],'burst'],fireworks:['আতশবাজি',['#f43f5e','#facc15','#38bdf8','#a78bfa'],'fire'],rainbow:['রঙিন কনফেটি',['#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7'],'burst'],floating_hearts:['হৃদয় বৃষ্টি',['#e11d48','#f472b6','#fda4af'],'rain'],none:['কোনো ইফেক্ট নয়',null,'']};
+const TPL={'':'— বেছে নিন —',love:'❤ ভালোবাসা',bday:'🎂 জন্মদিন',thanks:'🙏 ধন্যবাদ',sorry:'🕊️ ক্ষমা চাওয়া',eid:'🌙 ঈদ/উৎসবের শুভেচ্ছা'};
+const TXT={
+  love:'তোমাকে নিয়ে লিখতে বসলে শব্দেরা কেমন যেন হারিয়ে যায়।\n\nশুধু এটুকু জেনে রেখো, তুমি আমার প্রতিটি দিনকে আরও সুন্দর করে দাও। তোমার হাসিটাই আমার সবচেয়ে প্রিয় জিনিস।',
+  bday:'আজ তোমার বিশেষ দিন, তাই এই ছোট্ট চিঠি।\n\nতোমার জীবন হোক হাসি, সুখ আর স্বপ্নপূরণে ভরা। জন্মদিনের অনেক অনেক শুভেচ্ছা!',
+  thanks:'তুমি যা করেছো, তার জন্য কীভাবে ধন্যবাদ জানাবো ভেবে পাচ্ছি না।\n\nপাশে থাকার জন্য, বিশ্বাস করার জন্য আন্তরিক কৃতজ্ঞতা।',
+  sorry:'আমি জানি আমার ভুল হয়েছে, আর সেজন্য আমি সত্যিই দুঃখিত।\n\nআশা করি তুমি আমাকে ক্ষমা করবে। তোমাকে হারাতে চাই না।',
+  eid:'এই আনন্দের দিনে তোমাকে ও তোমার পরিবারকে জানাই আন্তরিক শুভেচ্ছা।\n\nসবার জীবন সুখে, শান্তিতে ভরে উঠুক।'
+};
+
+const KEY='chithi_letters',BK='chithi_base',BK2='chithi_base2';
+const $=id=>document.getElementById(id);
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('সংরক্ষণ করা যায়নি')}}
+};
+let letters=[],cur=null;
+const F=['salutation','recipient','body','sender','signature','theme','font','effect','unlock'];
+
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function uid(){return 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+function popup(html,btns){
+  $('mt').innerHTML=html;$('mb').innerHTML='';
+  btns.forEach(b=>{const e=document.createElement('button');e.className='btn '+(b.c||'g');e.textContent=b.t;e.onclick=()=>{if(b.f&&b.f()===false)return;$('ov').classList.add('hide')};$('mb').appendChild(e)});
+  $('ov').classList.remove('hide');
+}
+function normBase(u){
+  u=(u||'').trim();if(!u)return'';
+  if(!/^https?:\/\//i.test(u))u='https://'+u;
+  try{return new URL(u).href.split('#')[0]}catch(e){return null}
+}
+
+/* ---------- সেটিংস ---------- */
+function syncAlt(){$('alt').classList.toggle('hide',!normBase(store.get(BK2,'')))}
+function settings(){
+  popup(`<h3>⚙ সেটিংস</h3>
+  <label>মূল ঠিকানা (যেখানে এই ফাইল আপলোড করেছেন)</label>
+  <input id="bu" placeholder="https://আপনার-সাইট.netlify.app/" value="${esc(store.get(BK,''))}">
+  <label>বিকল্প ঠিকানা (ঐচ্ছিক, যেমন GitHub Pages বা Cloudflare Pages)</label>
+  <input id="bu2" placeholder="https://নাম.github.io/chithi/" value="${esc(store.get(BK2,''))}">
+  <small style="color:var(--m);display:block;margin:-6px 0 6px">একই ফাইল দুই জায়গায় আপলোড করে রাখলে একটি না চললে অন্যটির লিংক পাঠাতে পারবেন। <b>https://</b> না লিখলে নিজে থেকে যোগ হবে।</small>`,
+  [{t:'সংরক্ষণ',c:'',f:()=>{
+    const v=normBase($('bu').value),v2=normBase($('bu2').value);
+    if(v===null||v2===null){toast('ঠিকানাটি ঠিক নয়');return false}
+    store.set(BK,v);store.set(BK2,v2);syncAlt();toast('সেটিংস সংরক্ষিত ✓')}},{t:'বাতিল'}]);
+}
+function help(){
+  popup(`<h3>🌐 লগইন ছাড়া সবার জন্য চালু করবেন যেভাবে</h3>
+  <ol style="padding-left:20px;line-height:1.8;font-size:15px">
+  <li>ফাইলের নাম <b>index.html</b> রাখুন (এই ফাইলের নামই index.html), তাহলে সাইটের মূল ঠিকানা দিয়েই চলবে।</li>
+  <li>Netlify ব্যবহার করলে সাইটটি নিজের অ্যাকাউন্টে লগইন করে ক্লেইম করুন। সেটিংসে (Site configuration → Access &amp; security, মেনুর নাম একটু আলাদা হতে পারে) পাসওয়ার্ড বা ভিজিটর লগইন চালু থাকলে বন্ধ করুন।</li>
+  <li>Netlify-তে সমস্যা থাকলে একই ফাইল <b>GitHub Pages</b> বা <b>Cloudflare Pages</b>-এ দিন। এগুলো সাধারণত সবার জন্য খোলা থাকে। তারপর সেটি বিকল্প ঠিকানায় বসান।</li>
+  <li><b>পরীক্ষা:</b> লিংক কপি করে ব্রাউজারের প্রাইভেট/ইনকগনিটো ট্যাবে খুলুন। লগইন চাইলে অন্যেরাও তা-ই দেখবে।</li></ol>`,[{t:'বুঝেছি',c:''}]);
+}
+
+/* ---------- ডেটা ---------- */
+function blank(){return{id:uid(),salutation:'প্রিয়',recipient:'',body:'',sender:'',signature:'ইতি',theme:'rose_velvet',seal:'classic_heart',font:'bangla_poetic',effect:'rose_petals',unlock:'',link:'',updated:Date.now()}}
+function init(){
+  fill($('theme'),THEMES,0);fill($('seal'),SEALS,0);fill($('font'),FONTS,0);fill($('effect'),EFFECTS,0);
+  $('tpl').innerHTML=Object.entries(TPL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  letters=store.get(KEY,[]);
+  if(!letters.length){letters=[Object.assign(blank(),{recipient:'বন্ধু',body:TXT.thanks,sender:'তোমার শুভাকাঙ্ক্ষী'})];store.set(KEY,letters)}
+  syncAlt();select(letters[0].id);
+}
+function fill(sel,o,i){sel.innerHTML=Object.entries(o).map(([k,v])=>`<option value="${k}">${esc(v[i]!==undefined?v[i]:v.n)}</option>`).join('')}
+function renderList(){
+  const q=$('q').value.trim().toLowerCase();
+  $('cnt').textContent=letters.length+' টি চিঠি';
+  $('list').innerHTML=letters.filter(l=>(l.recipient+l.body).toLowerCase().includes(q)).map(l=>
+    `<div class="item ${cur&&cur.id===l.id?'on':''}" onclick="select('${l.id}')"><span class="dot" style="background:${(THEMES[l.theme]||THEMES.rose_velvet).flap}"></span><div><b>${esc(l.salutation)} ${esc(l.recipient)||'(নামহীন)'}</b><small>${l.link?'🔗 ':''}${esc(l.body).slice(0,30)||'—'}</small></div></div>`).join('')||'<small style="color:var(--m)">কোনো চিঠি নেই</small>';
+}
+function select(id){
+  cur=letters.find(l=>l.id===id);if(!cur)return;
+  F.forEach(k=>$(k).value=cur[k]||'');$('seal').value=cur.seal;$('tpl').value='';
+  $('lkv').value=cur.link||'';$('lk').classList.toggle('hide',!cur.link);
+  $('cc').textContent='('+(cur.body||'').length+' অক্ষর)';
+  renderList();preview();
+}
+function read(){F.forEach(k=>cur[k]=$(k).value);cur.seal=$('seal').value}
+function upd(){
+  if(!cur)return;read();cur.link='';$('lk').classList.add('hide');
+  $('cc').textContent='('+cur.body.length+' অক্ষর)';preview();
+}
+function useTpl(){
+  const k=$('tpl').value;if(!k||!cur)return;
+  $('body').value=TXT[k];upd();
+}
+function save(q){if(!cur)return;read();cur.updated=Date.now();store.set(KEY,letters);renderList();if(!q)toast('সংরক্ষিত হয়েছে ✓')}
+function newLetter(){const l=blank();letters.unshift(l);store.set(KEY,letters);select(l.id)}
+function askDel(){
+  if(!cur)return;
+  popup(`<h3>🗑 চিঠিটি ডিলিট করবেন?</h3><p style="color:var(--m)">“${esc(cur.salutation)} ${esc(cur.recipient)||'নামহীন'}” চিরতরে মুছে যাবে। এটি আর ফেরানো যাবে না।</p>`,
+  [{t:'হ্যাঁ, ডিলিট করুন',c:'',f:()=>{
+    letters=letters.filter(l=>l.id!==cur.id);if(!letters.length)letters=[blank()];
+    store.set(KEY,letters);select(letters[0].id);toast('ডিলিট হয়েছে')}},{t:'না, থাক'}]);
+}
+function exportJson(){dl('chithi-backup.json',JSON.stringify(letters,null,2),'application/json')}
+function importJson(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const a=JSON.parse(r.result);if(!Array.isArray(a))throw 0;letters=a.map(x=>Object.assign(blank(),x));store.set(KEY,letters);select(letters[0].id);toast('ইমপোর্ট সম্পন্ন')}catch(err){toast('ফাইলটি ঠিক নয়')}};
+  r.readAsText(f);e.target.value='';
+}
+function dl(n,t,ty){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:ty}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function preview(){$('pv').srcdoc=genLetter(cur)}
+function dev(w){$('pv').style.width=w}
+
+/* ---------- চিঠির HTML জেনারেটর ---------- */
+function genLetter(c){
+  const t=THEMES[c.theme]||THEMES.rose_velvet,s=SEALS[c.seal]||SEALS.classic_heart,f=(FONTS[c.font]||FONTS.bangla_poetic)[1],ef=EFFECTS[c.effect]||EFFECTS.none;
+  const nm=esc(c.salutation)+' '+esc(c.recipient);
+  const U=c.unlock?(typeof c.unlock==='number'?c.unlock:new Date(c.unlock).getTime()):0;
+  const lines=String(c.body||'').split('\n').map((l,i)=>`<div class="ln" style="animation-delay:${(.5+i*.3).toFixed(1)}s">${esc(l)||'&nbsp;'}</div>`).join('');
+  return `<!DOCTYPE html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💌 ${nm}</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"><\/script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;font-family:'Hind Siliguri',sans-serif;background:radial-gradient(circle at 50% 20%,${t.bg},#09090b 75%);color:#fafafa;overflow-x:hidden}
+#stage{position:relative;width:100%;max-width:440px;perspective:900px;text-align:center}
+.env{width:100%;aspect-ratio:16/11;background:${t.env};border-radius:16px;position:relative;cursor:pointer;box-shadow:0 30px 60px -15px #000;transition:transform .4s,opacity .6s;animation:fl 3s ease-in-out infinite}
+@keyframes fl{50%{transform:translateY(-8px)}}
+.flap{position:absolute;inset:0 0 auto 0;height:58%;background:${t.flap};clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .8s}
+.env.open{animation:none;opacity:0;transition:opacity .5s .8s}
+.env.open .flap{transform:rotateX(180deg)}
+.to{position:absolute;bottom:18px;left:0;right:0;font-size:18px;opacity:.92}
+.seal{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:62px;height:62px;border-radius:50%;background:${s[2]};display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 6px 14px rgba(0,0,0,.5);z-index:2;transition:opacity .3s}
+.env.open .seal{opacity:0}
+.hint{margin-top:18px;font-size:14px;color:#d6d3d1}
+#paper{display:none;width:100%;max-width:520px;background:${t.paper};color:${t.ink};border-radius:10px;padding:36px 30px;font-family:${f};box-shadow:0 30px 70px -10px #000;animation:up .8s ease both}
+#paper h2{font-size:24px;margin-bottom:18px;font-weight:600}
+.ln{font-size:18px;line-height:1.9;opacity:0;animation:up .7s ease forwards}
+.sig{margin-top:28px;text-align:right;font-size:18px;opacity:0;animation:up .7s ease 2s forwards}
+button{margin-top:24px;background:${t.env};color:#fff;border:0;border-radius:99px;padding:8px 18px;font:inherit;cursor:pointer;opacity:.85}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+</style></head><body>
+<div id="stage"><div class="env" id="env" onclick="openIt()"><div class="flap"></div><div class="seal">${s[1]}</div><div class="to">${nm}</div></div><div class="hint" id="hint">✉ খুলতে খামে ক্লিক করুন</div></div>
+<div id="paper"><h2>${nm},</h2>${lines}<div class="sig">${esc(c.signature)}<br><b>${esc(c.sender)}</b></div><button onclick="location.reload()">🔁 আবার পড়ুন</button></div>
+<script>
+var C=${JSON.stringify(ef[1])},M=${JSON.stringify(ef[2])},U=${U||0};
+function fx(){if(!window.confetti||!C)return;
+  if(M==='burst'){confetti({particleCount:100,spread:100,origin:{y:.6},colors:C});return}
+  var end=Date.now()+3500;(function f(){
+    if(M==='rain')confetti({particleCount:3,angle:90,spread:70,startVelocity:18,gravity:.7,origin:{x:Math.random(),y:-.1},colors:C});
+    else confetti({particleCount:40,spread:360,startVelocity:25,origin:{x:Math.random(),y:Math.random()*.5},colors:C});
+    if(Date.now()<end)setTimeout(f,M==='rain'?60:350)})()}
+function openIt(){
+  if(U&&Date.now()<U){document.getElementById('hint').textContent='🔒 এই চিঠি খোলা যাবে: '+new Date(U).toLocaleString('bn-BD');return}
+  document.getElementById('env').classList.add('open');
+  setTimeout(function(){document.getElementById('stage').style.display='none';document.getElementById('paper').style.display='block';fx()},1300);
+}
+<\/script></body></html>`;
+}
+
+/* ---------- শেয়ার লিংক ---------- */
+async function enc(c){
+  const u=c.unlock?new Date(c.unlock).getTime():0;
+  const o={a:c.salutation,r:c.recipient,b:c.body,s:c.sender,g:c.signature,t:c.theme,l:c.seal,f:c.font,e:c.effect};
+  if(u)o.u=u;
+  let bytes=new TextEncoder().encode(JSON.stringify(o)),p='p';
+  if(window.CompressionStream){
+    bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer());p='z';
+  }
+  let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return p+btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+async function dec(h){
+  const p=h[0];let out=Uint8Array.from(atob(h.slice(1).replace(/-/g,'+').replace(/_/g,'/')),ch=>ch.charCodeAt(0));
+  if(p==='z')out=new Uint8Array(await new Response(new Blob([out]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  const o=JSON.parse(new TextDecoder().decode(out));
+  return{salutation:o.a,recipient:o.r,body:o.b,sender:o.s,signature:o.g,theme:o.t,seal:o.l,font:o.f,effect:o.e,unlock:o.u||0};
+}
+async function shorten(u){
+  const call=async a=>{
+    const r=await fetch('https://is.gd/create.php?format=json'+(a?'&shorturl='+a:'')+'&url='+encodeURIComponent(u),{signal:AbortSignal.timeout(7000)});
+    const j=await r.json();return j.shorturl||null;
+  };
+  try{const s=await call('chithi_'+Math.random().toString(36).slice(2,7));if(s)return s}catch(e){}
+  try{return await call('')}catch(e){return null}
+}
+async function makeLink(alt){
+  if(!cur)return;save(1);
+  const b=$('mk');b.textContent='⏳ তৈরি হচ্ছে…';b.disabled=true;
+  try{
+    let base=normBase(store.get(alt?BK2:BK,''));
+    if(!base)base=/^https?:/i.test(location.href)?location.href.split('#')[0]:'';
+    const local=!base||/^https?:\/\/(localhost|127\.|192\.168\.|10\.|0\.0\.0\.0)/i.test(base);
+    const tok=await enc(cur);
+    let url=(base||'https://ঠিকানা-দিন.example/chithi.html')+'#'+tok,note='✅ লিংকে ক্লিক করলেই খাম খুলে ইফেক্টসহ চিঠি দেখা যাবে।';
+    if(local)note='⚠ এটি লোকাল ঠিকানা, শুধু আপনার ডিভাইসে চলবে। ফাইলটি অনলাইনে আপলোড করে ⚙ সেটিংসে তার পুরো ঠিকানা দিন, নইলে অন্যের ফোনে লিংক খুলবে না।';
+    else{
+      const s=await shorten(url);
+      if(s){url=s;note='✅ ছোট লিংক তৈরি হয়েছে। যেকোনো অ্যাপে পাঠান। পাঠানোর আগে প্রাইভেট ট্যাবে খুলে একবার দেখে নিন।'}
+      else note='ℹ ছোট করা যায়নি (ইন্টারনেট/সার্ভিস সমস্যা), পুরো লিংকটিই ব্যবহার করুন।';
+    }
+    if(cur.unlock)note+=' 🔒 খোলার সময় না হলে প্রাপক চিঠি পড়তে পারবে না।';
+    cur.link=url;store.set(KEY,letters);renderList();
+    $('lkv').value=url;$('lkn').textContent=note;$('lk').classList.remove('hide');
+  }catch(e){toast('লিংক তৈরি হয়নি')}
+  b.textContent='🔗 শেয়ার লিংক তৈরি';b.disabled=false;
+}
+function copyLink(){
+  const v=$('lkv').value;
+  (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('লিংক কপি হয়েছে ✓')).catch(()=>{$('lkv').select();toast('লিংক সিলেক্ট করা আছে, কপি করুন')});
+}
+function testLink(){const v=$('lkv').value;if(v)window.open(v,'_blank')}
+function showQr(){
+  const v=$('lkv').value;if(!v)return;
+  popup('<h3>▦ QR কোড</h3><p style="color:var(--m);font-size:14px">ফোনের ক্যামেরায় স্ক্যান করলেই চিঠি খুলবে।</p><div id="qr">লোড হচ্ছে…</div>',[{t:'বন্ধ করুন'}]);
+  const draw=()=>{try{$('qr').innerHTML='';new QRCode($('qr'),{text:v,width:220,height:220,correctLevel:QRCode.CorrectLevel.L})}catch(e){$('qr').textContent='লিংকটি QR-এর জন্য বেশি বড়'}};
+  if(window.QRCode)return draw();
+  const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload=draw;s.onerror=()=>{$('qr').textContent='QR লোড হয়নি, ইন্টারনেট দেখুন'};document.head.appendChild(s);
+}
+
+/* ---------- শুরু: লিংক হলে চিঠি, নইলে এডমিন ---------- */
+(async function(){
+  const h=location.hash.slice(1);
+  if(h.length<8){init();return}
+  try{const c=await dec(h);document.open();document.write(genLetter(c));document.close()}
+  catch(e){document.documentElement.className='';document.body.innerHTML='<div style="padding:40px;text-align:center;font-size:18px">😔 চিঠিটি খোলা যায়নি।<br>লিংকটি পুরো কপি হয়েছে কিনা দেখুন, অথবা Chrome ব্রাউজারে খুলুন।</div>'}
+})();
+</script>
+</body>
+</html>
